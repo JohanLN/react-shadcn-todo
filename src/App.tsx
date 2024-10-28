@@ -18,15 +18,18 @@ import useLocalStorage from './shared/hooks/useLocalStorage'
 
 const App = () => {
     const [todos, setTodos] = useLocalStorage<Todo[]>('todos', [])
-    const contextValue = useMemo(() => ({
-        todos,
-        setTodos
-    }), [todos, setTodos])
+    const contextValue = useMemo(
+        () => ({
+            todos,
+            setTodos,
+        }),
+        [todos, setTodos]
+    )
 
     return (
         <TodoContext.Provider value={contextValue}>
-            <h1 className="py-5 text-center">React TodoList</h1>
             <Dialog>
+                <h1 className="py-5 text-center">React TodoList</h1>
                 <div className="grid grid-cols-1 gap-2 px-20 py-12 md:grid-cols-4 lg:px-80">
                     <DialogTrigger asChild>
                         <div className="fixed bottom-10 right-10 z-10">
@@ -35,22 +38,12 @@ const App = () => {
                             </Button>
                         </div>
                     </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Add a new task</DialogTitle>
-                            <DialogDescription>
-                                Enter informations to create a new task to do.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <TodoForm setTodos={setTodos} />
-                    </DialogContent>
+
                     <div className="col-span-4 overflow-hidden rounded border px-6 py-3">
                         <h3 className="w-full bg-white">All tasks</h3>
                         <div className="h-full max-h-80 min-h-40 flex-col overflow-y-auto">
                             <div className="h-full">
-                                <TodoList
-                                    filterCondition="all"
-                                />
+                                <TodoList filterCondition="all" />
                             </div>
                         </div>
                     </div>
@@ -58,9 +51,7 @@ const App = () => {
                         <h3 className="w-full bg-white">Done tasks</h3>
                         <div className="h-full max-h-80 min-h-40 flex-col overflow-y-auto">
                             <div className="h-full">
-                                <TodoList
-                                    filterCondition="done"
-                                />
+                                <TodoList filterCondition="done" />
                             </div>
                         </div>
                     </div>
@@ -68,13 +59,20 @@ const App = () => {
                         <h3 className="w-full bg-white">Undone tasks</h3>
                         <div className="h-full max-h-80 min-h-40 flex-col overflow-y-auto">
                             <div className="h-full">
-                                <TodoList
-                                    filterCondition="undone"
-                                />
+                                <TodoList filterCondition="undone" />
                             </div>
                         </div>
                     </div>
                 </div>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add a new task</DialogTitle>
+                        <DialogDescription>
+                            Enter informations to create a new task to do.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <TodoForm setTodos={setTodos} />
+                </DialogContent>
             </Dialog>
             <Toaster richColors duration={3000} closeButton />
         </TodoContext.Provider>
