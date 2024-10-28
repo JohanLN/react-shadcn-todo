@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react'
+import { useMemo } from 'react'
 import TodoForm from './components/todoForm/TodoForm'
 import TodoList from './components/todoList/TodoList'
 import { Button } from './components/ui/button'
@@ -11,14 +12,19 @@ import {
     DialogTrigger,
 } from './components/ui/dialog'
 import { Toaster } from './components/ui/sonner'
+import TodoContext from './core/context/todo.context'
 import Todo from './core/models/entities/Todo.entity'
 import useLocalStorage from './shared/hooks/useLocalStorage'
 
 const App = () => {
     const [todos, setTodos] = useLocalStorage<Todo[]>('todos', [])
+    const contextValue = useMemo(() => ({
+        todos,
+        setTodos
+    }), [todos, setTodos])
 
     return (
-        <>
+        <TodoContext.Provider value={contextValue}>
             <h1 className="py-5 text-center">React TodoList</h1>
             <Dialog>
                 <div className="grid grid-cols-1 gap-2 px-20 py-12 md:grid-cols-4 lg:px-80">
@@ -43,8 +49,6 @@ const App = () => {
                         <div className="h-full max-h-80 min-h-40 flex-col overflow-y-auto">
                             <div className="h-full">
                                 <TodoList
-                                    todos={todos}
-                                    setTodos={setTodos}
                                     filterCondition="all"
                                 />
                             </div>
@@ -55,8 +59,6 @@ const App = () => {
                         <div className="h-full max-h-80 min-h-40 flex-col overflow-y-auto">
                             <div className="h-full">
                                 <TodoList
-                                    todos={todos}
-                                    setTodos={setTodos}
                                     filterCondition="done"
                                 />
                             </div>
@@ -67,8 +69,6 @@ const App = () => {
                         <div className="h-full max-h-80 min-h-40 flex-col overflow-y-auto">
                             <div className="h-full">
                                 <TodoList
-                                    todos={todos}
-                                    setTodos={setTodos}
                                     filterCondition="undone"
                                 />
                             </div>
@@ -77,7 +77,7 @@ const App = () => {
                 </div>
             </Dialog>
             <Toaster richColors duration={3000} closeButton />
-        </>
+        </TodoContext.Provider>
     )
 }
 

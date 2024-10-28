@@ -1,23 +1,20 @@
-import { formatDate, now } from '@/core/date/dateFormatter'
+import TodoContext from '@/core/context/todo.context'
+import { now } from '@/core/date/dateFormatter'
 import Todo from '@/core/models/entities/Todo.entity'
-import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { PopoverContent, PopoverTrigger } from '@radix-ui/react-popover'
-import { Calendar as CalendarIcon } from 'lucide-react'
+import { useContext } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 import { Button } from '../ui/button'
-import { Calendar } from '../ui/calendar'
 import { DialogClose, DialogFooter } from '../ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '../ui/form'
 import { Input } from '../ui/input'
-import { Popover } from '../ui/popover'
 import { Textarea } from '../ui/textarea'
+import DueDateFormItem from './DueDateFormItem'
 
 interface ITodoFormProps {
-    setTodos: (value: Todo[]) => void
     todo?: Todo
 }
 
@@ -30,30 +27,31 @@ const todoFormSchema = z.object({
 })
 
 const TodoForm = (props: ITodoFormProps) => {
+    const {setTodos} = useContext(TodoContext)
+    const {todo} = props;
+
     const form = useForm<z.infer<typeof todoFormSchema>>({
         resolver: zodResolver(todoFormSchema),
         defaultValues: {
-            todoTitle: props.todo?.title ?? '',
-            todoDescription: props.todo?.description ?? '',
-            dueDate: props.todo?.dueDate ?? null,
+            todoTitle: todo?.title ?? '',
+            todoDescription: todo?.description ?? '',
+            dueDate: todo?.dueDate ?? null,
         },
     })
 
     const onSubmit = (values: z.infer<typeof todoFormSchema>) => {
         const { todoTitle, todoDescription, dueDate } = values
-        console.log(values)
-        console.log('ça passe ici ? ===>', values, props.todo)
 
-        if (props.todo) {
-            props.setTodos((prevTodos: Todo[]) =>
-                prevTodos.map((todo: Todo) => {
-                    if (todo.id === props.todo?.id) {
-                        todo.title = todoTitle
-                        todo.description = todoDescription
-                        todo.dueDate = dueDate
+        if (todo && todo.id) {
+            setTodos((prevTodos: Todo[]) =>
+                prevTodos.map((todoItem: Todo) => {
+                    if (todoItem.id === todo?.id) {
+                        todoItem.title = todoTitle
+                        todoItem.description = todoDescription
+                        todoItem.dueDate = dueDate
                     }
 
-                    return todo
+                    return todoItem
                 })
             )
             toast.success('The task has been successfuly edited.')
@@ -66,7 +64,7 @@ const TodoForm = (props: ITodoFormProps) => {
                 dueDate
             )
 
-            props.setTodos((prev: Todo[]) =>
+            setTodos((prev: Todo[]) =>
                 [...prev, newTodo].sort((todo: Todo) =>
                     todo.isCompleted ? 1 : -1
                 )
@@ -118,48 +116,7 @@ const TodoForm = (props: ITodoFormProps) => {
                             </FormItem>
                         )}
                     />
-                    <FormField
-                        control={form.control}
-                        name="dueDate"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                                <FormLabel>Todo task due date</FormLabel>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            className={cn(
-                                                'flex w-fit flex-row gap-3 px-4 text-start',
-                                                !field.value &&
-                                                    'text-muted-foreground'
-                                            )}
-                                        >
-                                            {field.value ? (
-                                                formatDate(field.value)
-                                            ) : (
-                                                <span>Pick a date</span>
-                                            )}
-                                            <CalendarIcon />
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent
-                                        className="w-auto rounded bg-white p-0"
-                                        align="start"
-                                    >
-                                        <Calendar
-                                            mode="single"
-                                            selected={field.value ?? new Date()}
-                                            onSelect={field.onChange}
-                                            disabled={(date) =>
-                                                date < new Date('1900-01-01')
-                                            }
-                                            {...field}
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                            </FormItem>
-                        )}
-                    />
+                    <DueDateFormItem formControl={form.control} />
                     <DialogFooter>
                         <div className="flex w-fit flex-row gap-5">
                             <DialogClose asChild>

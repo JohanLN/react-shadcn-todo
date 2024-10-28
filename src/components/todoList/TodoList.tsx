@@ -1,23 +1,25 @@
+import TodoContext from '@/core/context/todo.context'
 import { dateDiff, now } from '@/core/date/dateFormatter'
 import Todo from '@/core/models/entities/Todo.entity'
-import { Plus } from 'lucide-react'
+import { useContext } from 'react'
 import { toast } from 'sonner'
 import TodoItem from '../todoItem/TodoItem'
-import { Button } from '../ui/button'
-import { DialogTrigger } from '../ui/dialog'
+import EmptyState from './EmptyState'
 
 interface ITodoListProps {
-    todos: Todo[]
-    setTodos: (value: Todo[]) => void
     filterCondition: 'all' | 'done' | 'undone'
 }
 
 const TodoList = (props: ITodoListProps) => {
-    const completeTodo = (id: string) => {
-        const updatedTodo = props.todos.find((todo) => todo.id === id)
+    const context = useContext(TodoContext);
+    const {filterCondition} = props;
+    const {todos, setTodos} = context;
 
-        props.setTodos(
-            props.todos
+    const completeTodo = (id: string) => {
+        const updatedTodo = todos.find((todo) => todo.id === id)
+
+        setTodos(
+            todos
                 .map((todo) =>
                     todo.id === id
                         ? { ...todo, isCompleted: !todo.isCompleted }
@@ -33,18 +35,18 @@ const TodoList = (props: ITodoListProps) => {
         )
     }
     const deleteTodo = (id: string) => {
-        props.setTodos(props.todos.filter((todo) => todo.id !== id))
+        setTodos(todos.filter((todo) => todo.id !== id))
         toast.error(`Task deleted at ${now()}`)
     }
 
     return (
         <div className="flex h-full flex-col gap-1">
-            {props.todos.length ? (
-                props.todos
+            {todos.length ? (
+                todos
                     .filter((todo: Todo) => {
-                        if (props.filterCondition === 'done') {
+                        if (filterCondition === 'done') {
                             return todo.isCompleted
-                        } else if (props.filterCondition === 'undone') {
+                        } else if (filterCondition === 'undone') {
                             return !todo.isCompleted
                         }
                         return todo
@@ -56,22 +58,11 @@ const TodoList = (props: ITodoListProps) => {
                                 todo={todo}
                                 completeTodo={completeTodo}
                                 deleteTodo={deleteTodo}
-                                setTodos={props.setTodos}
                             />
                         )
                     })
             ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-2">
-                    <h4>This list is empty</h4>
-                    {props.filterCondition === 'all' ? (
-                        <DialogTrigger asChild>
-                            <Button variant="outline">
-                                <Plus />
-                                Start by creating a new task
-                            </Button>
-                        </DialogTrigger>
-                    ) : null}
-                </div>
+                <EmptyState filterCondition={filterCondition} />
             )}
         </div>
     )
